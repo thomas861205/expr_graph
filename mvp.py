@@ -1,50 +1,119 @@
-pnl = [10.0, 11.0, -2.0]
-weight = [1, 2, 1]
+"""
+Try to rewrite this code with Python
+source: https://blog.janestreet.com/computations-that-differentiate-debug-and-document-themselves/
+"""
+from typing import List, Optional
 
-UNIT_INDENT = ' ' * 2
+"""
+(** A computation involving some set of variables. It can be evaluated, and
+    the partial derivative of each variable will be automatically computed. *)
+type t
 
-class node:
-  def __init__(self, v, isConst, lvl=0):
+module Variable : sig
+  (** An identifier used to name a variable. *)
+  module ID : String_id.S
+
+  (** A variable in a computation. *)
+  type t
+
+  val create : id:ID.t -> initial_value:float -> t
+
+  (** Returns the current value of this variable. *)
+  val get_value : t -> float
+
+  (** Returns the current partial derivative of this variable. *)
+  val get_derivative : t -> float
+
+  (** Sets the current value of this variable. *)
+  val set_value : t -> float -> unit
+end
+"""
+class Variable:
+  def __init__(self, id, init_val, parents:Optional[List]= None) -> None:
+    self.ID = id
+    self.v = init_val
+    self.parents: List[Variable] = parents if parents is not None else []
+  
+  def __repr__(self) -> str:
+    return '{}: {}'.format(self.ID, self.v)
+
+  def get_value(self):
+    return self.v
+
+  def get_derivative(self):
+    ...
+
+  def set_value(self, v) -> None:
     self.v = v
-    self.const = isConst
-    self.lvl = lvl
 
-def sum_opr(ls):
-  ret = sum([ele.v if isinstance(ele, node) else node(ele, True).v
-             for ele in ls])
-  lvl = max([ele.lvl if isinstance(ele, node) else node(ele, True).lvl
-             for ele in ls]) + 1
-  txt = [f'+sum: {ret}\n']
-  for ele in ls:
-    if isinstance(ele, node):
-      continue
-    txt.append(UNIT_INDENT + f'+---- {ele}\n')
-  return node(ret, False, lvl=lvl), txt
+"""
+(** Constructs a computation representing a constant value. *)
+val constant : float -> t
+"""
+def constant(id, v) -> Variable:
+  return Variable(id, v)
 
-def square_opr():
-  return
+"""
+(** Constructs a computation representing a single variable. *)
+val variable : Variable.t -> t
+"""
+def variable(id, v) -> Variable:
+  return Variable(id, v)
 
-def abs_opr():
-  return
+"""
+(** Constructs a computation representing the sum over some [t]s. *)
+val sum : t list -> t
+"""
+def vsum(vars: List[Variable]) -> Variable:
+  return Variable('SUM', sum([var.v for var in vars]), parents=vars)
 
-def dump_text(txt_metas):
-  lvl_ls = [meta[1] for meta in txt_metas]
-  max_lvl = max(lvl_ls)
-  unit_indent = ' ' * 2
-  for txt_ls, lvl in reversed(txt_metas):
-    indent_mult = max_lvl - lvl
-    for txt in txt_ls:
-      print(UNIT_INDENT * indent_mult + txt, end='')
+"""
+(** Constructs a computation representing the square of [t]. *)
+val square : t -> t
+"""
+def vsquare(var) -> Variable:
+  return Variable('SQUARE', var.v**2, parents=[var])
 
-def expr1():
-  text_buffer = []
-  spnl, txt1 = sum_opr(pnl)
-  text_buffer.append((txt1, spnl.lvl))
-  sweight, txt2 = sum_opr(weight)
-  text_buffer.append((txt2, sweight.lvl))
-  spw, txt3 = sum_opr([spnl, sweight])
-  text_buffer.append((txt3, spw.lvl))
-  print(spnl.lvl, sweight.lvl, spw.lvl)
-  dump_text(text_buffer)
+"""
+(** [evaluate t] evaluates the computation [t] and returns the result, and
+    updates the derivative information in the variables in [t]. *)
+val evaluate : t -> float
+"""
+def evaluate(var):
+  return ...
 
-expr1()
+def expand(var, max_lvl=None, _lvl=0):
+  if _lvl == max_lvl: return
+  print('  ' * _lvl, var)
+  for parent in var.parents:
+    expand(parent, max_lvl=max_lvl, _lvl=_lvl+1)
+
+"""
+```
+let computation =
+  let var name initial_value =
+    variable (Variable.create ~id:(Variable.ID.of_string name) ~initial_value)
+  in
+  let x = var "x" 2. in
+  let y = var "y" 4. in
+  square (sum [x; square (sum [ y; constant 1.0 ])])
+;;
+```
+"""
+def main():
+  one = constant('one', 1)
+  two = constant('two', 2)
+  y = variable('y', 4)
+  x = variable('x', 2)
+  computation = vsum([y, one])
+  computation = vsquare(computation)
+  computation = vsum([x, computation])
+  computation = vsquare(computation)
+  computation = vsum([computation, two])
+  # print(computation, computation.parents)
+  expand(computation); print()
+  expand(computation, max_lvl=2); print()
+  expand(computation, max_lvl=3); print()
+
+if __name__ == '__main__':
+  main()
