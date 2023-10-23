@@ -139,7 +139,9 @@ def expr3():
              constant('may weight',   0.765),
              constant('june weight',  0.758),]
   computation = vinner_product(aums, weights)
-  expand(computation)
+  expand(computation); print()
+  expand(computation, max_lvl=2); print()
+  expand(computation, max_lvl=3)
 
 if __name__ == '__main__':
   # expr1()
