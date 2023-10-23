@@ -74,6 +74,15 @@ val square : t -> t
 def vsquare(var) -> Variable:
   return Variable('SQUARE', var.v**2, parents=[var])
 
+def vproduct(var1, var2) -> Variable:
+  return Variable('PRODUCT', var1.v * var2.v, parents=[var1, var2])
+
+def vinner_product(vars1, vars2) -> Variable:
+  assert len(vars1) == len(vars2)
+  products = [vproduct(var1, var2) for var1, var2 in zip(vars1, vars2)]
+  sum_of_products = vsum(products)
+  return Variable('INNERPRODUCT', sum_of_products.v, parents=[sum_of_products])
+
 """
 (** [evaluate t] evaluates the computation [t] and returns the result, and
     updates the derivative information in the variables in [t]. *)
@@ -100,7 +109,7 @@ let computation =
 ;;
 ```
 """
-def main():
+def expr1():
   one = constant('one', 1)
   two = constant('two', 2)
   y = variable('y', 4)
@@ -115,5 +124,24 @@ def main():
   expand(computation, max_lvl=2); print()
   expand(computation, max_lvl=3); print()
 
+def expr2():
+  computation = constant('zero', 0)
+  for i in range(5):
+    if i % 2 == 0:
+      computation = vsum([computation, constant('i', i)])
+  expand(computation)
+
+def expr3():
+  aums = [constant('april aum', 10_000_000),
+          constant('may aum',   12_000_000),
+          constant('june aum',  12_500_000),]
+  weights = [constant('april weight', 0.772),
+             constant('may weight',   0.765),
+             constant('june weight',  0.758),]
+  computation = vinner_product(aums, weights)
+  expand(computation)
+
 if __name__ == '__main__':
-  main()
+  # expr1()
+  # expr2()
+  expr3()
