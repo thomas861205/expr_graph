@@ -1,5 +1,6 @@
 # expr_graph
 Inspired by [this post](https://blog.janestreet.com/computations-that-differentiate-debug-and-document-themselves/)
+
 tldr; an expression is constructed as a graph (DAG to be specific). Good side effects are expanding the expression on a different level and can easily support calculation of derivative.
 ```
 >>> python mvp.py
