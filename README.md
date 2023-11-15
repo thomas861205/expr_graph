@@ -1,7 +1,7 @@
 # expr_graph
 Inspired by [this post](https://blog.janestreet.com/computations-that-differentiate-debug-and-document-themselves/)
 
-tldr; an expression is constructed as a graph (DAG to be specific). Good side effects are expanding the expression on a different level and can easily support calculation of derivative.
+tldr; an expression is constructed as a graph (DAG to be specific). Good side effects are expanding the expression on a different level and the ease of derivative calculation.
 ```
 >>> python mvp.py
  INNERPRODUCT: 26375000.0
@@ -25,3 +25,8 @@ tldr; an expression is constructed as a graph (DAG to be specific). Good side ef
      PRODUCT: 9180000.0
      PRODUCT: 9475000.0
 ```
+
+TODO
+- [ ] render XML and fold all levels by default
+- [ ] more operations
+- [ ] derivative (it might end up being a janky version of  [micrograd](https://github.com/karpathy/micrograd)
